@@ -196,7 +196,7 @@ func oneHourWatcher(oneHour chan int) {
 			}
 			// 12th 1 hour ball encountered and all other balls have returned to the queue. Now push the 12th ball onto the queue
 			_ = ballQueue.Push(v)
-			if ballQueue.EqualsOrigin() {
+			if ballQueue.EqualsOrigin() && *runTime == 0 {
 				quit <- 0
 				return
 			}
