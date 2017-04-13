@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime/pprof"
 
 	"github.com/flowjacked/ballclock/queue"
 	"github.com/flowjacked/ballclock/stack"
@@ -12,8 +13,10 @@ import (
 
 var (
 	// CLI flags
-	ballCount = flag.Int("ballCount", 0, "Number of balls in the ball queue. Valid values are between 27 and 127")
-	runTime   = flag.Int("runTime", 0, "The number of minutes to run the clock")
+	ballCount  = flag.Int("ballCount", 0, "Number of balls in the ball queue. Valid values are between 27 and 127")
+	runTime    = flag.Int("runTime", 0, "The number of minutes to run the clock")
+	cpuProfile = flag.String("cpuProfile", "", "write cpu profile to file")
+	memProfile = flag.String("memProfile", "", "write memory profile to this file")
 
 	// For ball control
 	clock = make(chan int)
@@ -54,6 +57,24 @@ func main() {
 		fmt.Printf("ERROR: ballCount must be between %d and %d\n", MinBalls, MaxBalls)
 		flag.Usage()
 		return
+	}
+
+	if *cpuProfile != "" {
+		f, err := os.Create(*cpuProfile)
+		if err != nil {
+			fmt.Println(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+
+	if *memProfile != "" {
+		f, err := os.Create(*memProfile)
+		if err != nil {
+			fmt.Println(err)
+		}
+		pprof.WriteHeapProfile(f)
+		defer f.Close()
 	}
 
 	// Set channels
